@@ -1,11 +1,12 @@
 import AuthBanner from '@/components/Auth/AuthBanner';
 import AuthContent from '@/components/Auth/AuthContent';
 import remUnit from '@/constants/Units';
-import { Link, router } from 'expo-router';
+import { Link } from 'expo-router';
 import { useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { Button, Text, TextInput, Checkbox } from 'react-native-paper';
+import { Button, Checkbox, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 
 export default function LoginPage() {
     const [mailInput, setMailInput] = useState("");
@@ -79,7 +80,10 @@ export default function LoginPage() {
                                 <View>
                                     <Button
                                         mode="contained"
-                                        onPress={() => router.navigate('/(tabs)/notes')}
+                                        onPress={() => {
+
+
+                                        }}
                                     >Login</Button>
                                     <View style={{ height: remUnit(2) }} />
                                     <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/register'}>Cadastre-se</Link></Text>

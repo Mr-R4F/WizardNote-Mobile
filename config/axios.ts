@@ -4,6 +4,6 @@ import Cookies from "js-cookie";
 const token = Cookies.get('auth_token') || '';
 
 export const axiosInstanceAPI = axios.create({
-  baseURL: "https://api.example.com",
+  baseURL: "http://localhost:3000",
   headers: { Authorization: `Bearer ${token}` }
 })
