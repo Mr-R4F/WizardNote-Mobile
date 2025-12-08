@@ -7,7 +7,7 @@ import { axiosInstanceAPI } from "../config/axios";
 // Certifique-se de que a variável de ambiente GEMINI_API_KEY está configurada!
 console.log('CHAVE SENDO USADA PELO GEMINI:', process.env.GEMINI_API_KEY ? 'Carregada' : 'UNDEFINED');
 
-const genAI = new GoogleGenerativeAI("AIzaSyDCUm2IKxT3SP-CBoVG9mz6U52mdoZKWkU");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 const safetySettings = [
     {
