@@ -17,7 +17,18 @@ export default function AuthBanner() {
 
             <View style={{ height: remUnit(3) }} />
 
-            <Text variant="displayMedium">LOGO AQUI</Text>
+            <Text variant="displayMedium">
+             <Text variant="displayMedium">
+                <Image
+                    source={require('../../assets/images/logo.jpg')}
+                    style={{
+                        width: 200,
+                        height: 200,
+                        borderRadius: 10
+                    }}
+                />
+            </Text>
+            </Text>
         </View>
     );
 }
