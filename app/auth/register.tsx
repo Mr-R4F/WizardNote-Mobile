@@ -1,31 +1,64 @@
 import AuthBanner from '@/components/Auth/AuthBanner';
 import AuthContent from '@/components/Auth/AuthContent';
+import AppSnackBar from '@/components/SnackBar';
 import remUnit from '@/constants/Units';
 import AuthService from '@/services/Auth';
 import { RegisterService } from '@/types/type';
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from 'react-native';
-import { Button, Text, TextInput } from 'react-native-paper';
+import { ActivityIndicator, Button, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterPage() {
     const [confirmPassWdInput, setConfirmPassWdInput] = useState("");
     const [showPassWd, setShowPasswd] = useState(true);
+    const { control, handleSubmit, formState: { errors }, reset } = useForm<RegisterService>();
+    const [visible, setVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const onToggleSnackBar = () => setVisible(!visible);
+    const onDismissSnackBar = () => setVisible(false);
+    const [content, setContent] = useState('');
+
+    useEffect(() => {
+        reset({
+            nome: "",
+            email: "",
+            senha: ""
+        })
+        setConfirmPassWdInput("")
+    }, []);
 
     const handleRegister = async (data: RegisterService) => {
-        const { nome, email, senha } = data;
-        const result = await AuthService.register({ nome, email, senha });
+        try {
+            const { nome, email, senha } = data;
 
-        if (result.status === 201) {
-            setTimeout(() => {
-                router.navigate('/auth/login');
-            }, 2000);
-            return;
-        };
+            setIsLoading(true);
+            const result = await AuthService.register({ nome, email, senha });
+            setIsLoading(false);
 
-        /*setIsLoading(true);
+            if (result.status === 201) {
+                onToggleSnackBar();
+                setContent('Login realizado com sucesso!');
+
+                setTimeout(() => {
+                    onDismissSnackBar();
+                }, 1800);
+
+                setTimeout(() => {
+                    router.navigate('/auth/login');
+                }, 2200);
+
+                return;
+            };
+        } catch (error) {
+            setIsLoading(false);
+            setContent('Ocorreu um erro');
+            console.log(error)
+        }
+
+        /*
           setIsLoading(false);
   
 
@@ -46,7 +79,7 @@ export default function RegisterPage() {
           }, 3000); */
     }
 
-    const { control, handleSubmit, formState: { errors } } = useForm<RegisterService>();
+
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -226,9 +259,15 @@ export default function RegisterPage() {
                                     <Button
                                         mode="contained"
                                         onPress={handleSubmit(handleRegister)}
-                                        style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} 
+                                        style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
                                         textColor='#000'
-                                    >Cadastrar-se</Button>
+                                    >{
+                                            isLoading
+                                                ?
+                                                <ActivityIndicator animating={true} size={remUnit(.9)} color='#000' />
+                                                :
+                                                'Cadastrar'
+                                        }</Button>
                                     <View style={{ height: remUnit(2) }} />
                                     <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/login'}>Logue-se</Link></Text>
                                 </View>
@@ -236,6 +275,15 @@ export default function RegisterPage() {
                         </>
                     }
                 />
+                <View>
+                    <AppSnackBar
+                        content={content}
+                        visible={visible}
+                        onDismissSnackBar={onDismissSnackBar}
+                        icon={'close'}
+                        elevation={4}
+                    />
+                </View>
             </ScrollView>
         </SafeAreaView>
     )

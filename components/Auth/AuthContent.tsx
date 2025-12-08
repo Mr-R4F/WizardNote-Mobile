@@ -1,8 +1,6 @@
 import remUnit from "@/constants/Units";
-import { router } from "expo-router";
 import { JSX } from "react";
 import { View } from "react-native";
-import { Button, Text} from 'react-native-paper';
 
 export default function AuthContent(ContentProps: { context: JSX.Element }) {
     return (
@@ -11,7 +9,9 @@ export default function AuthContent(ContentProps: { context: JSX.Element }) {
             alignItems: 'center',
             justifyContent: 'center',
             paddingHorizontal: 15,
-            paddingVertical: 45
+            paddingVertical: 45,
+            borderTopRightRadius: remUnit(2.5),
+            borderTopLeftRadius: remUnit(2.5),
         }}>
             {ContentProps.context}
         </View>

@@ -1,10 +1,11 @@
 import AuthBanner from '@/components/Auth/AuthBanner';
 import AuthContent from '@/components/Auth/AuthContent';
+import AppSnackBar from '@/components/SnackBar';
 import remUnit from '@/constants/Units';
 import AuthService from '@/services/Auth';
 import { LoginService } from '@/types/type';
 import { Link, router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from 'react-native';
 import { Button, Checkbox, Text, TextInput } from 'react-native-paper';
@@ -14,37 +15,44 @@ export default function LoginPage() {
     const [checked, setChecked] = useState(false);
     const [showPassWd, setShowPasswd] = useState(true);
 
+    const [visible, setVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const onToggleSnackBar = () => setVisible(!visible);
+    const onDismissSnackBar = () => setVisible(false);
+    const [content, setContent] = useState('');
+    const { control, handleSubmit, formState: { errors }, reset } = useForm<LoginService>();
 
     const handleLogin = async (data: LoginService) => {
-        const { email, senha } = data;
-        const result = await AuthService.login({ email, senha });
-        console.log(localStorage.getItem('auth_token'), 'autenticado!')
+        try {
+            const { email, senha } = data;
+            const result = await AuthService.login({ email, senha });
 
-        if (result.status === 201) {
-            setTimeout(() => {
-                router.navigate('/(tabs)/notes')
-            }, 500);
-            return;
-        };
-        /*setIsLoading(true);
-          setIsLoading(false);
-  
+            if (result.status === 201) {
+                onToggleSnackBar();
+                setContent('Login realizado com sucesso!');
 
-        /* if(result?.code === 'ERR_NETWORK') {
-           // setState({ vertical: 'top', horizontal: 'center', message: 'Ocorreu um erro ao logar', open: true });
-            return;
+                setTimeout(() => {
+                    onDismissSnackBar();
+                }, 1800);
+
+                setTimeout(() => {
+                    router.navigate('/(tabs)/notes')
+                }, 2200);
+
+                return;
+            };
+        } catch (err) {
+            console.log(err)
+            setContent('Ocorreu um erro');
         }
- 
-        //setState({ vertical: 'top', horizontal: 'center', message: result?.response.data.message, open: true });
     }
 
-    /*  const handleClose = () => {
-         setState({ ...state, open: false });
-     }; */
-    }
-
-    const { control, handleSubmit, formState: { errors } } = useForm<LoginService>();
+    useEffect(() => {
+        reset({
+            email: "",
+            senha: ""
+        })
+    }, []);
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -181,6 +189,15 @@ export default function LoginPage() {
                         </>
                     }
                 />
+                <View>
+                    <AppSnackBar
+                        content={content}
+                        visible={visible}
+                        onDismissSnackBar={onDismissSnackBar}
+                        icon={'close'}
+                        elevation={4}
+                    />
+                </View>
             </ScrollView>
         </SafeAreaView>
     )
