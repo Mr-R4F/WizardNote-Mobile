@@ -1,4 +1,5 @@
 import { JSX } from "react";
+import { Animated, GestureResponderEvent } from "react-native";
 
 type ModalContentProps = {
     visible: boolean,
@@ -12,6 +13,16 @@ type CardActionsProps = {
     reqType: string,
     onClose: () => void | undefined,
     onReq?: (data: any) => Promise<void>
+}
+
+type SnackBarActionsProps = {
+    content: string,
+    visible: boolean,
+    label?: string,
+    icon?: string,
+    elevation?: 0 | 1 | 2 | 3 | 4 | 5 | Animated.Value | undefined,
+    onDismissSnackBar: () => void,
+    onPress?: (e: GestureResponderEvent) => void,
 }
 
 interface RegisterService {
@@ -41,11 +52,9 @@ interface UpdateNoteService {
 
 export type {
     CardActionsProps,
-    CardContentProps, 
-    CreateNoteService, 
+    CardContentProps, CreateNoteService,
     LoginService,
     ModalContentProps,
-    RegisterService,
-    UpdateNoteService
+    RegisterService, SnackBarActionsProps, UpdateNoteService
 };
 

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "WizardNote",
-    "slug": "WizardNote",
+    "slug": "wizard-note",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,7 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wizardnote.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.wizardnote.app",
@@ -36,6 +40,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9f56f689-7e0c-46b5-b74c-66cc4e47fb0f"
+      }
+    },
+    "owner": "mrrafs-organization"
   }
 }

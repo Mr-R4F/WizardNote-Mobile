@@ -1,6 +1,7 @@
 import AppCard from '@/components/Card';
 import AppModal from '@/components/Modal';
 import AppModalActions from '@/components/Modal/Actions';
+import AppSnackBar from '@/components/SnackBar';
 import remUnit from '@/constants/Units';
 import NoteService from '@/services/Note';
 import { CreateNoteService, UpdateNoteService } from '@/types/type';
@@ -8,36 +9,26 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ScrollView, View } from 'react-native';
-import { AnimatedFAB, Card, IconButton, Text, TextInput, TouchableRipple } from 'react-native-paper';
+import { AnimatedFAB, Button, Card, IconButton, Text, TextInput, TouchableRipple } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotesPage() {
-	const [showCardActions, setShowCardActions] = useState(true);
 	const [activeCardId, setActiveCardId] = useState<number | null>(null);
-
 	const [visible, setVisible] = useState(false);
-
+	const [SnackBarVisible, setSnackBarVisible] = useState(false);
 	const [onShow, setOnShow] = useState(false);
+	const [onSummarize, setOnSummarize] = useState(false);
 	const [onCreate, setOnCreate] = useState(false);
 	const [onEdit, setOnEdit] = useState(false);
 	const [onDelete, setOnDelete] = useState(false);
-
 	const [selectedNote, setSelectedNote] = useState<any>(null);
 	const [req, setReq] = useState('');
 
-	const queryClient = useQueryClient();
+	const onToggleSnackBar = () => setSnackBarVisible(!SnackBarVisible);
+	const onDismissSnackBar = () => setSnackBarVisible(false);
+	const [content, setContent] = useState('');
 
-	useEffect(() => {
-		if (!visible) {
-			setTimeout(() => {
-				setOnShow(false);
-				setOnEdit(false);
-				setOnDelete(false);
-				setOnCreate(false);
-				setReq('');
-			}, 120);
-		}
-	}, [visible]);
+	const queryClient = useQueryClient();
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["nota"],
@@ -51,11 +42,82 @@ export default function NotesPage() {
 		}
 	});
 
-	const handleCreate = async (data: CreateNoteService) => {
-		const { titulo, conteudo } = data;
-		console.log(data)
-		await NoteService.create({ id_categoria: 1, titulo, conteudo });
-		console.log('certow!')
+	const { control, handleSubmit, formState: { errors }, reset, setValue, getValues, watch } = useForm<CreateNoteService | UpdateNoteService>();
+	const resumoIaValue = watch("resumo_ia");
+	const [extended, setExtended] = useState(false);
+
+	useEffect(() => {
+		if (!visible) {
+			setTimeout(() => {
+				setOnShow(false);
+				setOnEdit(false);
+				setOnDelete(false);
+				setOnCreate(false);
+				setReq('');
+			}, 120);
+		}
+	}, [visible]);
+
+	useEffect(() => {
+		if (onEdit && selectedNote) {
+			reset({
+				titulo: selectedNote.titulo,
+				conteudo: selectedNote.conteudo,
+				resumo_ia: selectedNote.resumo_ia
+			});
+		}
+	}, [onEdit, selectedNote]);
+
+	useEffect(() => {
+		if (onCreate) {
+			reset({
+				titulo: "",
+				conteudo: "",
+				resumo_ia: ""
+			});
+		}
+	}, [onCreate]);
+
+	useEffect(() => {
+		if (selectedNote) {
+			setValue("titulo", selectedNote.titulo);
+			setValue("conteudo", selectedNote.conteudo);
+			setValue("resumo_ia", selectedNote.resumo_ia); // <-- AQUI!
+		}
+	}, [selectedNote]);
+
+	async function handleSummarize() {
+		try {
+			// Pega os valores atuais do form
+			const values = getValues();
+			console.log(values)
+			const { conteudo } = values;
+
+			if (!conteudo || conteudo.trim() === "") {
+				onToggleSnackBar();
+				setContent("Não há conteúdo para resumir.");
+				return;
+			}
+
+			// Chama sua API de resumo
+			const result = await NoteService.summarizeText(conteudo);
+			console.log(result)
+
+			setValue("resumo_ia", result);
+
+			// Feedback para o usuário
+			onToggleSnackBar();
+			setContent("Resumo gerado com sucesso!");
+
+			setTimeout(() => {
+				onDismissSnackBar();
+			}, 1800);
+
+		} catch (err) {
+			console.log(err);
+			onToggleSnackBar();
+			setContent("Falha ao gerar resumo.");
+		}
 	}
 
 	async function handleReq(data: any) {
@@ -63,37 +125,59 @@ export default function NotesPage() {
 			if (req === "edit") {
 				const { titulo, conteudo } = data;
 
-				await NoteService.update({
+				const result = await NoteService.update({
 					noteId: selectedNote.id_nota,
 					titulo,
 					conteudo,
 				});
-				console.log('editado!!')
+
+				if (result.status === 200) {
+					onToggleSnackBar();
+					setContent('Nota alterada com sucesso!');
+
+					setTimeout(() => {
+						onDismissSnackBar();
+					}, 1800);
+				}
 			}
 
 			if (req === "delete") {
-				await deleteNoteMutation.mutateAsync(selectedNote.id_nota);
-				console.log('deletado!')
+				const result = await deleteNoteMutation.mutateAsync(selectedNote.id_nota);
 
+				if (result.status === 200) {
+					onToggleSnackBar();
+					setContent('Nota removida com sucesso!');
+
+					setTimeout(() => {
+						onDismissSnackBar();
+					}, 1800);
+				}
 			}
 
 			if (req === "create") {
-				const { titulo, conteudo } = data;
-				console.log(data)
-				await NoteService.create({ id_categoria: 1, titulo, conteudo });
-				console.log('certow!')
+				const { titulo, conteudo, resumo_ia } = data;
 
+				const result = await NoteService.create({ id_categoria: 1, titulo, conteudo, resumo_ia });
+
+
+				if (result.status === 201) {
+					onToggleSnackBar();
+					setContent('Nota criada com sucesso!');
+
+					setTimeout(() => {
+						onDismissSnackBar();
+					}, 1800);
+				}
 			}
 
 			setVisible(false);
 			queryClient.invalidateQueries();
-		} catch (error) {
-			console.log("Erro ao executar ação:", error);
+		} catch (err) {
+			console.log(err)
+			onToggleSnackBar();
+			setContent('Ocorreu um erro ao executar esta ação');
 		}
 	}
-
-	const { control, handleSubmit, formState: { errors } } = useForm<CreateNoteService | UpdateNoteService>();
-	const [extended, setExtended] = useState(false);
 
 	return (
 		<SafeAreaView style={{ flex: 1, padding: 20 }}>
@@ -104,7 +188,6 @@ export default function NotesPage() {
 					extended={extended}
 					onLongPress={() => {
 						setExtended(!extended);
-						console.log("Criar nota");
 					}}
 					onPress={() => {
 						setReq('create');
@@ -131,9 +214,12 @@ export default function NotesPage() {
 
 				<View>
 					{isLoading ? (
-						<Text variant="displaySmall" style={{ color: '#000' }}>carregando...</Text>
+						<Text variant="displaySmall" style={{ color: '#000', position: 'absolute', top: 300 }}>Carregando notas...</Text>
 					) : data?.length === 0 ? (
-						<Text variant="displaySmall" style={{ color: '#000' }}>Nenhuma</Text>
+						<View style={{ position: 'absolute', top: 300 }}>
+							<Text variant="headlineMedium" style={{ color: '#000' }}>Nenhuma nota por enquanto</Text>
+							<Text variant="bodySmall" style={{ color: '#6e6e6e', textAlign: 'center' }}> Suas notas aparecem aqui </Text>
+						</View>
 					) : (
 						data?.map((item: any) => (
 							<>
@@ -191,140 +277,308 @@ export default function NotesPage() {
 						))
 					)}
 				</View>
-			</ScrollView>
 
-			<AppModal
-				visible={visible}
-				onDismiss={() => setVisible(false)}
-				content={
-					<>
-						<AppModalActions
-							reqType={req}
-							onReq={onShow || onDelete ? handleReq : handleSubmit(handleReq)}
-							onClose={() => setVisible(false)}
-						/>
+				<AppModal
+					visible={visible}
+					onDismiss={() => setVisible(false)}
+					content={
+						<>
+							<AppModalActions
+								reqType={req}
+								onReq={onShow || onDelete ? handleReq : handleSubmit(handleReq)}
+								onClose={() => setVisible(false)}
+							/>
 
-						{onCreate && (
-							<>
-								<Text variant="titleLarge" style={{ color: '#000' }}>Criar a sua nota</Text>
-								<View style={{ height: remUnit(1.5) }}></View>
-								<Controller
-									control={control}
-									rules={{ required: true }}
-									render={({ field: { onChange, onBlur, value } }) => (
-										<TextInput
-											label="Titulo"
-											value={value}
-											mode='outlined'
-											onChangeText={onChange}
-											onBlur={onBlur}
-											autoComplete='off'
-										/>
-									)}
-									name='titulo'
-								/>
-								<Controller
-									control={control}
-									rules={{ required: true }}
-									render={({ field: { onChange, onBlur, value } }) => (
-										<TextInput
-											label="Conteudo"
-											value={value}
-											mode='outlined'
-											onChangeText={onChange}
-											onBlur={onBlur}
-											autoComplete='off'
-										/>
-									)}
-									name='conteudo'
-								/>
-								<View>
-									<TextInput
-										label="Resumo"
-										value='1'
-										disabled={true}
-										mode='outlined'
-										autoComplete='off'
-									/>
-								</View>
-							</>
-						)}
-
-						{selectedNote && (
-							<>
-								{onShow && (
-									<>
-										<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Título da sua nota...</Text>
-										<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.titulo}</Text>
-
-										<View style={{ height: remUnit(1.5) }} />
-
-										<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Conteúdo da sua nota...</Text>
-										<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.conteudo}</Text>
-
-										<View style={{ height: remUnit(1.5) }} />
-
-										<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Resumo da sua nota...</Text>
-										<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.resumo_ia}</Text>
-									</>
-								)}
-
-								{onEdit && (
-									<>
-										<Text variant="titleLarge" style={{ color: '#000' }}>Editar nota</Text>
-										<View style={{ height: remUnit(1.5) }}></View>
+							{onCreate && (
+								<>
+									<Text variant="titleLarge" style={{ color: '#000' }}>Criar a sua nota</Text>
+									<View style={{ height: remUnit(1.5) }}></View>
+									<View>
+										<Text variant='labelLarge' style={{ color: '#000' }}>Título</Text>
+										<View style={{ height: remUnit(.25) }}></View>
 										<Controller
 											control={control}
 											rules={{ required: true }}
 											render={({ field: { onChange, onBlur, value } }) => (
 												<TextInput
-													label="Titulo"
 													value={value}
 													mode='outlined'
+													placeholder='Insira o título de sua nota...'
 													onChangeText={onChange}
 													onBlur={onBlur}
+													style={{ backgroundColor: '#c2c2c2' }}
+													underlineColor="transparent"
+													activeUnderlineColor="transparent"
+													outlineColor="#c2c2c2"
+													activeOutlineColor="#000"
+													selectionColor="#000"
+													cursorColor="black"
+													textColor="#000"
+													placeholderTextColor='#6e6e6e'
+													theme={{
+														colors: {
+															onSurfaceVariant: 'black',
+															outline: 'transparent'
+														}
+													}}
 													autoComplete='off'
 												/>
 											)}
 											name='titulo'
 										/>
+									</View>
+									<View style={{ height: remUnit() }}></View>
+
+									<View>
+										<Text variant='labelLarge' style={{ color: '#000' }}>Conteúdo</Text>
+										<View style={{ height: remUnit(.25) }}></View>
 										<Controller
 											control={control}
 											rules={{ required: true }}
 											render={({ field: { onChange, onBlur, value } }) => (
 												<TextInput
-													label="Conteudo"
 													value={value}
 													mode='outlined'
+													placeholder='Insira o conteúdo de sua nota...'
+													multiline={true}
 													onChangeText={onChange}
 													onBlur={onBlur}
+													style={{ backgroundColor: '#c2c2c2' }}
+													underlineColor="transparent"
+													activeUnderlineColor="transparent"
+													outlineColor="#c2c2c2"
+													activeOutlineColor="#000"
+													selectionColor="#000"
+													cursorColor="black"
+													textColor="#000"
+													placeholderTextColor='#6e6e6e'
+													theme={{
+														colors: {
+															onSurfaceVariant: 'black',
+															outline: 'transparent'
+														}
+													}}
 													autoComplete='off'
 												/>
 											)}
 											name='conteudo'
 										/>
-									</>
-								)}
+									</View>
 
-								{onDelete && (
-									<>
-										<Text variant="titleLarge" style={{ color: '#000', textAlign: 'center' }}>Remover a nota selecionada?</Text>
-										<Text variant="bodySmall" style={{ color: '#b1b1b1ff', textAlign: 'center' }}> Esta ação não poderá ser desfeita </Text>
+									<View style={{ height: remUnit(3) }}></View>
 
-										<View style={{ height: remUnit(1.5) }} />
-
-										<View style={{ flexDirection: 'row', justifyContent: 'center' }}>
-											<Text variant="titleLarge" style={{ color: '#000' }}>Nota #{selectedNote.id_nota}</Text>
-											<View style={{ width: remUnit(1.5) }} />
-											<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.titulo}</Text>
+									<View>
+										<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+											<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
+											<Button
+												icon="ray-start-arrow"
+												mode="contained-tonal"
+												onPress={handleSummarize}
+												style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+												textColor='#000'
+											>Resumir nota</Button>
 										</View>
-									</>
-								)}
-							</>
-						)}
-					</>
-				}
-			/>
-		</SafeAreaView>
+										<View style={{ height: remUnit(.25) }}></View>
+										<Controller
+											control={control}
+											rules={{ required: true }}
+											render={({ field: { onChange, onBlur, value } }) => (
+												<TextInput
+													disabled={true}
+													mode='outlined'
+													value={value}
+													placeholder='Seu resumo gerado aparece aqui...'
+													multiline={true}
+													onChangeText={onChange}
+													onBlur={onBlur}
+													style={{ backgroundColor: '#c2c2c2' }}
+													underlineColor="transparent"
+													activeUnderlineColor="transparent"
+													outlineColor="#c2c2c2"
+													activeOutlineColor="#000"
+													selectionColor="#000"
+													cursorColor="black"
+													textColor="#000"
+													placeholderTextColor='#6e6e6e'
+													theme={{
+														colors: {
+															onSurfaceVariant: 'black',
+															outline: 'transparent'
+														}
+													}}
+													autoComplete='off'
+												/>
+											)}
+											name='resumo_ia'
+										/>
+									</View>
+								</>
+							)}
+
+							{selectedNote && (
+								<>
+									{onShow && (
+										<>
+											<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Título da sua nota...</Text>
+											<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.titulo}</Text>
+
+											<View style={{ height: remUnit(1.5) }} />
+
+											<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Conteúdo da sua nota...</Text>
+											<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.conteudo}</Text>
+
+											<View style={{ height: remUnit(1.5) }} />
+
+											<Text variant="bodySmall" style={{ color: '#b1b1b1ff' }}>Resumo da sua nota...</Text>
+											<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.resumo_ia}</Text>
+										</>
+									)}
+
+									{onEdit && (
+										<>
+											<Text variant="titleLarge" style={{ color: '#000' }}>Editar nota</Text>
+											<View style={{ height: remUnit(1.5) }}></View>
+											<View>
+												<Text variant='labelLarge' style={{ color: '#000' }}>Título</Text>
+												<View style={{ height: remUnit(.25) }}></View>
+												<Controller
+													control={control}
+													rules={{ required: true }}
+													render={({ field: { onChange, onBlur, value } }) => (
+														<TextInput
+															value={value}
+															mode='outlined'
+															placeholder='Insira o título de sua nota...'
+															onChangeText={onChange}
+															onBlur={onBlur}
+															style={{ backgroundColor: '#c2c2c2' }}
+															underlineColor="transparent"
+															activeUnderlineColor="transparent"
+															outlineColor="#c2c2c2"
+															activeOutlineColor="#000"
+															selectionColor="#000"
+															cursorColor="black"
+															textColor="#000"
+															placeholderTextColor='#6e6e6e'
+															theme={{
+																colors: {
+																	onSurfaceVariant: 'black',
+																	outline: 'transparent'
+																}
+															}}
+															autoComplete='off'
+														/>
+													)}
+													name='titulo'
+												/>
+											</View>
+											<View style={{ height: remUnit() }}></View>
+
+											<View>
+												<Text variant='labelLarge' style={{ color: '#000' }}>Conteúdo</Text>
+												<View style={{ height: remUnit(.25) }}></View>
+												<Controller
+													control={control}
+													rules={{ required: true }}
+													render={({ field: { onChange, onBlur, value } }) => (
+														<TextInput
+															value={value}
+															mode='outlined'
+															placeholder='Insira o conteúdo de sua nota...'
+															multiline={true}
+															onChangeText={onChange}
+															onBlur={onBlur}
+															style={{ backgroundColor: '#c2c2c2' }}
+															underlineColor="transparent"
+															activeUnderlineColor="transparent"
+															outlineColor="#c2c2c2"
+															activeOutlineColor="#000"
+															selectionColor="#000"
+															cursorColor="black"
+															textColor="#000"
+															placeholderTextColor='#6e6e6e'
+															theme={{
+																colors: {
+																	onSurfaceVariant: 'black',
+																	outline: 'transparent'
+																}
+															}}
+															autoComplete='off'
+														/>
+													)}
+													name='conteudo'
+												/>
+											</View>
+
+											<View style={{ height: remUnit(3) }}></View>
+
+											<View>
+												<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+													<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
+													<Button
+														icon="ray-start-arrow"
+														mode="contained-tonal"
+														onPress={handleSummarize}
+														style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+														textColor='#000'
+													>Resumir nota</Button>
+												</View>
+												<View style={{ height: remUnit(.25) }}></View>
+												<TextInput
+													value={resumoIaValue}
+													disabled={true}
+													mode='outlined'
+													multiline={true}
+													style={{ backgroundColor: '#c2c2c2' }}
+													underlineColor="transparent"
+													activeUnderlineColor="transparent"
+													outlineColor="transparent"
+													activeOutlineColor="transparent"
+													selectionColor="transparent"
+													cursorColor="black"
+													textColor="#000"
+													theme={{
+														colors: {
+															onSurfaceVariant: 'black',
+															outline: '#000'
+														}
+													}}
+													autoComplete='off'
+												/>
+											</View>
+										</>
+									)}
+
+									{onDelete && (
+										<>
+											<Text variant="titleLarge" style={{ color: '#000', textAlign: 'center' }}>Remover a nota selecionada?</Text>
+											<Text variant="bodySmall" style={{ color: '#6e6e6e', textAlign: 'center' }}> Esta ação não poderá ser desfeita </Text>
+
+											<View style={{ height: remUnit(1.5) }} />
+
+											<View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+												<Text variant="titleLarge" style={{ color: '#000' }}>Nota #{selectedNote.id_nota}</Text>
+												<View style={{ width: remUnit(1.5) }} />
+												<Text variant="titleLarge" style={{ color: '#000' }}>{selectedNote.titulo}</Text>
+											</View>
+										</>
+									)}
+								</>
+							)}
+						</>
+					}
+				/>
+			</ScrollView>
+
+			<View>
+				<AppSnackBar
+					content={content}
+					visible={SnackBarVisible}
+					onDismissSnackBar={onDismissSnackBar}
+					icon={'close'}
+					elevation={4}
+				/>
+			</View>
+		</SafeAreaView >
 	);
 }
