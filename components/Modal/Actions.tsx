@@ -3,7 +3,7 @@ import { CardActionsProps } from "@/types/type";
 import { View } from "react-native";
 import { Button } from 'react-native-paper';
 
-export default function AppModalActions({ reqType, onClose }: CardActionsProps) {
+export default function AppModalActions({ reqType, onClose, onReq }: CardActionsProps) {
     return (
         <View style={{ position: 'absolute', right: 0, top: -70, flexDirection: 'row' }}>
             {reqType && (
@@ -11,6 +11,7 @@ export default function AppModalActions({ reqType, onClose }: CardActionsProps) 
                     <Button
                         mode="elevated"
                         style={{ borderRadius: remUnit(.75), backgroundColor: '#272727' }}
+                        onPress={onReq}
                         textColor='#FFF'
                     >
                         {
@@ -28,7 +29,7 @@ export default function AppModalActions({ reqType, onClose }: CardActionsProps) 
 
             )}
 
-            <Button icon="close" mode="contained-tonal" onPress={onClose} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'> Fechar</Button>
+            <Button icon="close" mode="contained-tonal" onPress={onClose} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'>Fechar</Button>
         </View>
     );
 }

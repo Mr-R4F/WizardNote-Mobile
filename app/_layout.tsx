@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/components/useColorScheme';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -47,21 +48,24 @@ export default function RootLayout() {
 	return <RootLayoutNav />;
 }
 
+
 function RootLayoutNav() {
 	const colorScheme = useColorScheme();
+	const queryClient = new QueryClient();
 
 	return (
 		<PaperProvider>
 			<SafeAreaProvider>
-				<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-					<Stack>
-						<Stack.Screen name="index" options={{ headerShown: false }} />
-						<Stack.Screen name="/(tabs)/notes" options={{ headerShown: false, }} />
-						<Stack.Screen name="auth/login" options={{ headerShown: false }} />
-						<Stack.Screen name="auth/register" options={{ headerShown: false }} />
-						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-					</Stack>
-				</ThemeProvider>
+				<QueryClientProvider client={queryClient}>
+					<ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+						<Stack screenOptions={{ headerShown: false }}>
+							<Stack.Screen name="index" />
+							<Stack.Screen name="auth/login" />
+							<Stack.Screen name="auth/register" />
+							<Stack.Screen name="(tabs)" />
+						</Stack>
+					</ThemeProvider>
+				</QueryClientProvider>
 			</SafeAreaProvider>
 		</PaperProvider>
 	);

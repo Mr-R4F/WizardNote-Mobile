@@ -1,18 +1,50 @@
 import AuthBanner from '@/components/Auth/AuthBanner';
 import AuthContent from '@/components/Auth/AuthContent';
 import remUnit from '@/constants/Units';
-import { Link } from 'expo-router';
+import AuthService from '@/services/Auth';
+import { LoginService } from '@/types/type';
+import { Link, router } from 'expo-router';
 import { useState } from 'react';
+import { Controller, useForm } from "react-hook-form";
 import { ScrollView, View } from 'react-native';
 import { Button, Checkbox, Text, TextInput } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
 export default function LoginPage() {
-    const [mailInput, setMailInput] = useState("");
-    const [passwdInput, setPasswdInput] = useState("");
     const [checked, setChecked] = useState(false);
     const [showPassWd, setShowPasswd] = useState(true);
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleLogin = async (data: LoginService) => {
+        const { email, senha } = data;
+        const result = await AuthService.login({ email, senha });
+        console.log(localStorage.getItem('auth_token'), 'autenticado!')
+
+        if(result.status === 201) {
+              setTimeout(() => {
+                router.navigate('/(tabs)/notes')
+            }, 500);
+            return;
+        }; 
+        /*setIsLoading(true);
+          setIsLoading(false);
+  
+
+        /* if(result?.code === 'ERR_NETWORK') {
+           // setState({ vertical: 'top', horizontal: 'center', message: 'Ocorreu um erro ao logar', open: true });
+            return;
+        }
+ 
+        //setState({ vertical: 'top', horizontal: 'center', message: result?.response.data.message, open: true });
+    }
+
+    /*  const handleClose = () => {
+         setState({ ...state, open: false });
+     }; */
+    }
+
+    const { control, handleSubmit, formState: { errors } } = useForm<LoginService>();
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -28,30 +60,48 @@ export default function LoginPage() {
                             <View style={{ width: '85%' }}>
                                 <View role='form'>
                                     <View>
-                                        <TextInput
-                                            label="E-mail"
-                                            value={mailInput}
-                                            mode='outlined'
-                                            style={{ width: '100%' }}
-                                            onChangeText={text => setMailInput(text)}
-                                            autoComplete='off'
-                                            left={<TextInput.Icon icon="email" />}
-                                        />
-                                        <View style={{ height: remUnit(1) }} />
-                                        <TextInput
-                                            label="Senha"
-                                            value={passwdInput}
-                                            mode='outlined'
-                                            onChangeText={text => setPasswdInput(text)}
-                                            autoComplete='off'
-                                            secureTextEntry={showPassWd}
-                                            left={<TextInput.Icon icon="lock" />}
-                                            right={
-                                                <TextInput.Icon
-                                                    icon={showPassWd ? 'eye' : 'eye-closed'}
-                                                    onPress={() => setShowPasswd(!showPassWd)}
+                                        <Controller
+                                            control={control}
+                                            rules={{ required: true }}
+                                            render={({ field: { onChange, onBlur, value } }) => (
+                                                <TextInput
+                                                    label="E-mail"
+                                                    value={value}
+                                                    mode='outlined'
+                                                    onChangeText={onChange}
+                                                    onBlur={onBlur}
+                                                    autoComplete='off'
+                                                    left={<TextInput.Icon icon="email" />}
                                                 />
-                                            }
+                                            )}
+                                            name='email'
+                                        />
+
+
+                                        <View style={{ height: remUnit(1) }} />
+
+                                        <Controller
+                                            control={control}
+                                            rules={{ required: true }}
+                                            render={({ field: { onChange, onBlur, value } }) => (
+                                                <TextInput
+                                                    label="Senha"
+                                                    value={value}
+                                                    mode='outlined'
+                                                    onChangeText={onChange}
+                                                    onBlur={onBlur}
+                                                    autoComplete='off'
+                                                    secureTextEntry={showPassWd}
+                                                    left={<TextInput.Icon icon="lock" />}
+                                                    right={
+                                                        <TextInput.Icon
+                                                            icon={showPassWd ? 'eye' : 'eye-closed'}
+                                                            onPress={() => setShowPasswd(!showPassWd)}
+                                                        />
+                                                    }
+                                                />
+                                            )}
+                                            name='senha'
                                         />
                                     </View>
                                     <View style={{ height: remUnit(1) }} />
@@ -73,20 +123,17 @@ export default function LoginPage() {
                                         <Text variant="bodySmall" style={{ color: '#797979ff' }}>Esqueceu a senha?</Text>
 
                                     </View>
-                                </View>
 
-                                <View style={{ height: remUnit(3.25) }} />
+                                    <View style={{ height: remUnit(3.25) }} />
 
-                                <View>
-                                    <Button
-                                        mode="contained"
-                                        onPress={() => {
-
-
-                                        }}
-                                    >Login</Button>
-                                    <View style={{ height: remUnit(2) }} />
-                                    <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/register'}>Cadastre-se</Link></Text>
+                                    <View>
+                                        <Button
+                                            mode="contained"
+                                            onPress={handleSubmit(handleLogin)}
+                                        >Login</Button>
+                                        <View style={{ height: remUnit(2) }} />
+                                        <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/register'}>Cadastre-se</Link></Text>
+                                    </View>
                                 </View>
                             </View>
                         </>

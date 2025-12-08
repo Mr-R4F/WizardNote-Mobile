@@ -1,9 +1,16 @@
 import axios from "axios";
-import Cookies from "js-cookie";
-
-const token = Cookies.get('auth_token') || '';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const axiosInstanceAPI = axios.create({
-  baseURL: "http://localhost:3000",
-  headers: { Authorization: `Bearer ${token}` }
-})
+  baseURL: "http://localhost:3000/",
+});
+
+axiosInstanceAPI.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem("auth_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});

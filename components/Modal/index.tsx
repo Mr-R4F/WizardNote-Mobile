@@ -9,7 +9,7 @@ export default function AppModal({ visible, onDismiss, content }: ModalContentPr
         <Portal>
             <Modal 
                 visible={visible} 
-                onDismiss={onDismiss} 
+                onDismiss={onDismiss}
                 contentContainerStyle={{ backgroundColor: '#FFF', width: '92%', padding: 15, borderRadius: remUnit()}}
                 style={{alignItems: 'center'}}
             >
