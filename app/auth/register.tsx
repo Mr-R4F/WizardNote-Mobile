@@ -40,7 +40,7 @@ export default function RegisterPage() {
 
             if (result.status === 201) {
                 onToggleSnackBar();
-                setContent('Login realizado com sucesso!');
+                setContent('Cadastro realizado com sucesso!');
 
                 setTimeout(() => {
                     onDismissSnackBar();

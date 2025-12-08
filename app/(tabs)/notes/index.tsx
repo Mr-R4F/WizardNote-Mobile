@@ -17,6 +17,7 @@ export default function NotesPage() {
 	const [visible, setVisible] = useState(false);
 	const [SnackBarVisible, setSnackBarVisible] = useState(false);
 	const [onShow, setOnShow] = useState(false);
+	const [onSummarize, setOnSummarize] = useState(false);
 	const [onCreate, setOnCreate] = useState(false);
 	const [onEdit, setOnEdit] = useState(false);
 	const [onDelete, setOnDelete] = useState(false);
@@ -41,8 +42,8 @@ export default function NotesPage() {
 		}
 	});
 
-
-	const { control, handleSubmit, formState: { errors }, reset } = useForm<CreateNoteService | UpdateNoteService>();
+	const { control, handleSubmit, formState: { errors }, reset, setValue, getValues, watch } = useForm<CreateNoteService | UpdateNoteService>();
+	const resumoIaValue = watch("resumo_ia");
 	const [extended, setExtended] = useState(false);
 
 	useEffect(() => {
@@ -62,20 +63,62 @@ export default function NotesPage() {
 			reset({
 				titulo: selectedNote.titulo,
 				conteudo: selectedNote.conteudo,
+				resumo_ia: selectedNote.resumo_ia
 			});
 		}
 	}, [onEdit, selectedNote]);
-
 
 	useEffect(() => {
 		if (onCreate) {
 			reset({
 				titulo: "",
 				conteudo: "",
-				resumo_ia: "resumotopzera"
+				resumo_ia: ""
 			});
 		}
 	}, [onCreate]);
+
+	useEffect(() => {
+		if (selectedNote) {
+			setValue("titulo", selectedNote.titulo);
+			setValue("conteudo", selectedNote.conteudo);
+			setValue("resumo_ia", selectedNote.resumo_ia); // <-- AQUI!
+		}
+	}, [selectedNote]);
+
+	async function handleSummarize() {
+		try {
+			// Pega os valores atuais do form
+			const values = getValues();
+			console.log(values)
+			const { conteudo } = values;
+
+			if (!conteudo || conteudo.trim() === "") {
+				onToggleSnackBar();
+				setContent("Não há conteúdo para resumir.");
+				return;
+			}
+
+			// Chama sua API de resumo
+			const result = await NoteService.summarizeText(conteudo);
+			console.log(result)
+
+			setValue("resumo_ia", result);
+
+			// Feedback para o usuário
+			onToggleSnackBar();
+			setContent("Resumo gerado com sucesso!");
+
+			setTimeout(() => {
+				onDismissSnackBar();
+			}, 1800);
+
+		} catch (err) {
+			console.log(err);
+			onToggleSnackBar();
+			setContent("Falha ao gerar resumo.");
+		}
+	}
 
 	async function handleReq(data: any) {
 		try {
@@ -171,9 +214,12 @@ export default function NotesPage() {
 
 				<View>
 					{isLoading ? (
-						<Text variant="displaySmall" style={{ color: '#000' }}>carregando...</Text>
+						<Text variant="displaySmall" style={{ color: '#000', position: 'absolute', top: 300 }}>Carregando notas...</Text>
 					) : data?.length === 0 ? (
-						<Text variant="displaySmall" style={{ color: '#000' }}>Nenhuma</Text>
+						<View style={{ position: 'absolute', top: 300 }}>
+							<Text variant="headlineMedium" style={{ color: '#000' }}>Nenhuma nota por enquanto</Text>
+							<Text variant="bodySmall" style={{ color: '#6e6e6e', textAlign: 'center' }}> Suas notas aparecem aqui </Text>
+						</View>
 					) : (
 						data?.map((item: any) => (
 							<>
@@ -231,6 +277,7 @@ export default function NotesPage() {
 						))
 					)}
 				</View>
+
 				<AppModal
 					visible={visible}
 					onDismiss={() => setVisible(false)}
@@ -323,7 +370,13 @@ export default function NotesPage() {
 									<View>
 										<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
 											<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
-											<Button icon="ray-start-arrow" mode="contained-tonal" onPress={() => console.log('')} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'>Resumir nota</Button>
+											<Button
+												icon="ray-start-arrow"
+												mode="contained-tonal"
+												onPress={handleSummarize}
+												style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+												textColor='#000'
+											>Resumir nota</Button>
 										</View>
 										<View style={{ height: remUnit(.25) }}></View>
 										<Controller
@@ -462,11 +515,17 @@ export default function NotesPage() {
 											<View>
 												<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
 													<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
-													<Button icon="ray-start-arrow" mode="contained-tonal" onPress={() => console.log('')} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'>Resumir nota</Button>
+													<Button
+														icon="ray-start-arrow"
+														mode="contained-tonal"
+														onPress={handleSummarize}
+														style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+														textColor='#000'
+													>Resumir nota</Button>
 												</View>
 												<View style={{ height: remUnit(.25) }}></View>
 												<TextInput
-													value={selectedNote.resumo_ia}
+													value={resumoIaValue}
 													disabled={true}
 													mode='outlined'
 													multiline={true}
@@ -520,6 +579,6 @@ export default function NotesPage() {
 					elevation={4}
 				/>
 			</View>
-		</SafeAreaView>
+		</SafeAreaView >
 	);
 }
