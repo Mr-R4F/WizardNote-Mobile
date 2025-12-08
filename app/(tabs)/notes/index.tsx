@@ -8,36 +8,20 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ScrollView, View } from 'react-native';
-import { AnimatedFAB, Card, IconButton, Text, TextInput, TouchableRipple } from 'react-native-paper';
+import { AnimatedFAB, Button, Card, IconButton, Text, TextInput, TouchableRipple } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotesPage() {
-	const [showCardActions, setShowCardActions] = useState(true);
 	const [activeCardId, setActiveCardId] = useState<number | null>(null);
-
 	const [visible, setVisible] = useState(false);
-
 	const [onShow, setOnShow] = useState(false);
 	const [onCreate, setOnCreate] = useState(false);
 	const [onEdit, setOnEdit] = useState(false);
 	const [onDelete, setOnDelete] = useState(false);
-
 	const [selectedNote, setSelectedNote] = useState<any>(null);
 	const [req, setReq] = useState('');
 
 	const queryClient = useQueryClient();
-
-	useEffect(() => {
-		if (!visible) {
-			setTimeout(() => {
-				setOnShow(false);
-				setOnEdit(false);
-				setOnDelete(false);
-				setOnCreate(false);
-				setReq('');
-			}, 120);
-		}
-	}, [visible]);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["nota"],
@@ -51,12 +35,41 @@ export default function NotesPage() {
 		}
 	});
 
-	const handleCreate = async (data: CreateNoteService) => {
-		const { titulo, conteudo } = data;
-		console.log(data)
-		await NoteService.create({ id_categoria: 1, titulo, conteudo });
-		console.log('certow!')
-	}
+
+	const { control, handleSubmit, formState: { errors }, reset } = useForm<CreateNoteService | UpdateNoteService>();
+	const [extended, setExtended] = useState(false);
+
+	useEffect(() => {
+		if (!visible) {
+			setTimeout(() => {
+				setOnShow(false);
+				setOnEdit(false);
+				setOnDelete(false);
+				setOnCreate(false);
+				setReq('');
+			}, 120);
+		}
+	}, [visible]);
+
+	useEffect(() => {
+		if (onEdit && selectedNote) {
+			reset({
+				titulo: selectedNote.titulo,
+				conteudo: selectedNote.conteudo,
+			});
+		}
+	}, [onEdit, selectedNote]);
+
+
+	useEffect(() => {
+		if (onCreate) {
+			reset({
+				titulo: "",
+				conteudo: "",
+				resumo_ia: "resumotopzera"
+			});
+		}
+	}, [onCreate]);
 
 	async function handleReq(data: any) {
 		try {
@@ -78,9 +91,9 @@ export default function NotesPage() {
 			}
 
 			if (req === "create") {
-				const { titulo, conteudo } = data;
+				const { titulo, conteudo, resumo_ia } = data;
 				console.log(data)
-				await NoteService.create({ id_categoria: 1, titulo, conteudo });
+				await NoteService.create({ id_categoria: 1, titulo, conteudo, resumo_ia });
 				console.log('certow!')
 
 			}
@@ -91,9 +104,6 @@ export default function NotesPage() {
 			console.log("Erro ao executar ação:", error);
 		}
 	}
-
-	const { control, handleSubmit, formState: { errors } } = useForm<CreateNoteService | UpdateNoteService>();
-	const [extended, setExtended] = useState(false);
 
 	return (
 		<SafeAreaView style={{ flex: 1, padding: 20 }}>
@@ -208,43 +218,117 @@ export default function NotesPage() {
 							<>
 								<Text variant="titleLarge" style={{ color: '#000' }}>Criar a sua nota</Text>
 								<View style={{ height: remUnit(1.5) }}></View>
-								<Controller
-									control={control}
-									rules={{ required: true }}
-									render={({ field: { onChange, onBlur, value } }) => (
-										<TextInput
-											label="Titulo"
-											value={value}
-											mode='outlined'
-											onChangeText={onChange}
-											onBlur={onBlur}
-											autoComplete='off'
-										/>
-									)}
-									name='titulo'
-								/>
-								<Controller
-									control={control}
-									rules={{ required: true }}
-									render={({ field: { onChange, onBlur, value } }) => (
-										<TextInput
-											label="Conteudo"
-											value={value}
-											mode='outlined'
-											onChangeText={onChange}
-											onBlur={onBlur}
-											autoComplete='off'
-										/>
-									)}
-									name='conteudo'
-								/>
 								<View>
-									<TextInput
-										label="Resumo"
-										value='1'
-										disabled={true}
-										mode='outlined'
-										autoComplete='off'
+									<Text variant='labelLarge' style={{ color: '#000' }}>Título</Text>
+									<View style={{ height: remUnit(.25) }}></View>
+									<Controller
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { onChange, onBlur, value } }) => (
+											<TextInput
+												value={value}
+												mode='outlined'
+												placeholder='Insira o título de sua nota...'
+												onChangeText={onChange}
+												onBlur={onBlur}
+												style={{ backgroundColor: '#c2c2c2' }}
+												underlineColor="transparent"
+												activeUnderlineColor="transparent"
+												outlineColor="#c2c2c2"
+												activeOutlineColor="#000"
+												selectionColor="#000"
+												cursorColor="black"
+												textColor="#000"
+												placeholderTextColor='#6e6e6e'
+												theme={{
+													colors: {
+														onSurfaceVariant: 'black',
+														outline: 'transparent'
+													}
+												}}
+												autoComplete='off'
+											/>
+										)}
+										name='titulo'
+									/>
+								</View>
+								<View style={{ height: remUnit() }}></View>
+
+								<View>
+									<Text variant='labelLarge' style={{ color: '#000' }}>Conteúdo</Text>
+									<View style={{ height: remUnit(.25) }}></View>
+									<Controller
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { onChange, onBlur, value } }) => (
+											<TextInput
+												value={value}
+												mode='outlined'
+												placeholder='Insira o conteúdo de sua nota...'
+												multiline={true}
+												onChangeText={onChange}
+												onBlur={onBlur}
+												style={{ backgroundColor: '#c2c2c2' }}
+												underlineColor="transparent"
+												activeUnderlineColor="transparent"
+												outlineColor="#c2c2c2"
+												activeOutlineColor="#000"
+												selectionColor="#000"
+												cursorColor="black"
+												textColor="#000"
+												placeholderTextColor='#6e6e6e'
+												theme={{
+													colors: {
+														onSurfaceVariant: 'black',
+														outline: 'transparent'
+													}
+												}}
+												autoComplete='off'
+											/>
+										)}
+										name='conteudo'
+									/>
+								</View>
+
+								<View style={{ height: remUnit(3) }}></View>
+
+								<View>
+									<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+										<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
+										<Button icon="ray-start-arrow" mode="contained-tonal" onPress={() => console.log('')} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'>Resumir nota</Button>
+									</View>
+									<View style={{ height: remUnit(.25) }}></View>
+									<Controller
+										control={control}
+										rules={{ required: true }}
+										render={({ field: { onChange, onBlur, value } }) => (
+											<TextInput
+												disabled={true}
+												mode='outlined'
+												value={value}
+												placeholder='Seu resumo gerado aparece aqui...'
+												multiline={true}
+												onChangeText={onChange}
+												onBlur={onBlur}
+												style={{ backgroundColor: '#c2c2c2' }}
+												underlineColor="transparent"
+												activeUnderlineColor="transparent"
+												outlineColor="#c2c2c2"
+												activeOutlineColor="#000"
+												selectionColor="#000"
+												cursorColor="black"
+												textColor="#000"
+												placeholderTextColor='#6e6e6e'
+												theme={{
+													colors: {
+														onSurfaceVariant: 'black',
+														outline: 'transparent'
+													}
+												}}
+												autoComplete='off'
+											/>
+										)}
+										name='resumo_ia'
 									/>
 								</View>
 							</>
@@ -273,43 +357,115 @@ export default function NotesPage() {
 									<>
 										<Text variant="titleLarge" style={{ color: '#000' }}>Editar nota</Text>
 										<View style={{ height: remUnit(1.5) }}></View>
-										<Controller
-											control={control}
-											rules={{ required: true }}
-											render={({ field: { onChange, onBlur, value } }) => (
-												<TextInput
-													label="Titulo"
-													value={value}
-													mode='outlined'
-													onChangeText={onChange}
-													onBlur={onBlur}
-													autoComplete='off'
-												/>
-											)}
-											name='titulo'
-										/>
-										<Controller
-											control={control}
-											rules={{ required: true }}
-											render={({ field: { onChange, onBlur, value } }) => (
-												<TextInput
-													label="Conteudo"
-													value={value}
-													mode='outlined'
-													onChangeText={onChange}
-													onBlur={onBlur}
-													autoComplete='off'
-												/>
-											)}
-											name='conteudo'
-										/>
+										<View>
+											<Text variant='labelLarge' style={{ color: '#000' }}>Título</Text>
+											<View style={{ height: remUnit(.25) }}></View>
+											<Controller
+												control={control}
+												rules={{ required: true }}
+												render={({ field: { onChange, onBlur, value } }) => (
+													<TextInput
+														value={value}
+														mode='outlined'
+														placeholder='Insira o título de sua nota...'
+														onChangeText={onChange}
+														onBlur={onBlur}
+														style={{ backgroundColor: '#c2c2c2' }}
+														underlineColor="transparent"
+														activeUnderlineColor="transparent"
+														outlineColor="#c2c2c2"
+														activeOutlineColor="#000"
+														selectionColor="#000"
+														cursorColor="black"
+														textColor="#000"
+														placeholderTextColor='#6e6e6e'
+														theme={{
+															colors: {
+																onSurfaceVariant: 'black',
+																outline: 'transparent'
+															}
+														}}
+														autoComplete='off'
+													/>
+												)}
+												name='titulo'
+											/>
+										</View>
+										<View style={{ height: remUnit() }}></View>
+
+										<View>
+											<Text variant='labelLarge' style={{ color: '#000' }}>Conteúdo</Text>
+											<View style={{ height: remUnit(.25) }}></View>
+											<Controller
+												control={control}
+												rules={{ required: true }}
+												render={({ field: { onChange, onBlur, value } }) => (
+													<TextInput
+														value={value}
+														mode='outlined'
+														placeholder='Insira o conteúdo de sua nota...'
+														multiline={true}
+														onChangeText={onChange}
+														onBlur={onBlur}
+														style={{ backgroundColor: '#c2c2c2' }}
+														underlineColor="transparent"
+														activeUnderlineColor="transparent"
+														outlineColor="#c2c2c2"
+														activeOutlineColor="#000"
+														selectionColor="#000"
+														cursorColor="black"
+														textColor="#000"
+														placeholderTextColor='#6e6e6e'
+														theme={{
+															colors: {
+																onSurfaceVariant: 'black',
+																outline: 'transparent'
+															}
+														}}
+														autoComplete='off'
+													/>
+												)}
+												name='conteudo'
+											/>
+										</View>
+
+										<View style={{ height: remUnit(3) }}></View>
+
+										<View>
+											<View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+												<Text variant='labelLarge' style={{ color: '#000' }}>Resumo gerado por I.A</Text>
+												<Button icon="ray-start-arrow" mode="contained-tonal" onPress={() => console.log('')} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} textColor='#000'>Resumir nota</Button>
+											</View>
+											<View style={{ height: remUnit(.25) }}></View>
+											<TextInput
+												value={selectedNote.resumo_ia}
+												disabled={true}
+												mode='outlined'
+												multiline={true}
+												style={{ backgroundColor: '#c2c2c2' }}
+												underlineColor="transparent"
+												activeUnderlineColor="transparent"
+												outlineColor="transparent"
+												activeOutlineColor="transparent"
+												selectionColor="transparent"
+												cursorColor="black"
+												textColor="#000"
+												theme={{
+													colors: {
+														onSurfaceVariant: 'black',
+														outline: '#000'
+													}
+												}}
+												autoComplete='off'
+											/>
+										</View>
 									</>
 								)}
 
 								{onDelete && (
 									<>
 										<Text variant="titleLarge" style={{ color: '#000', textAlign: 'center' }}>Remover a nota selecionada?</Text>
-										<Text variant="bodySmall" style={{ color: '#b1b1b1ff', textAlign: 'center' }}> Esta ação não poderá ser desfeita </Text>
+										<Text variant="bodySmall" style={{ color: '#6e6e6e', textAlign: 'center' }}> Esta ação não poderá ser desfeita </Text>
 
 										<View style={{ height: remUnit(1.5) }} />
 

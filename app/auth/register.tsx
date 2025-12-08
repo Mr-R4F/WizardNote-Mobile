@@ -71,8 +71,28 @@ export default function RegisterPage() {
                                                     mode='outlined'
                                                     onChangeText={onChange}
                                                     onBlur={onBlur}
+                                                    style={{ backgroundColor: '#c2c2c2' }}
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    outlineColor="#c2c2c2"
+                                                    activeOutlineColor="#000"
+                                                    selectionColor="#000"
+                                                    cursorColor="black"
+                                                    textColor="#000"
+                                                    placeholderTextColor='#6e6e6e'
+                                                    theme={{
+                                                        colors: {
+                                                            onSurfaceVariant: 'black',
+                                                            outline: 'transparent'
+                                                        }
+                                                    }}
                                                     autoComplete='off'
-                                                    left={<TextInput.Icon icon="email" />}
+                                                    left={
+                                                        <TextInput.Icon
+                                                            icon="email"
+                                                            color='#000'
+                                                        />
+                                                    }
                                                 />
                                             )}
                                             name='email'
@@ -88,8 +108,28 @@ export default function RegisterPage() {
                                                     mode='outlined'
                                                     onChangeText={onChange}
                                                     onBlur={onBlur}
+                                                    style={{ backgroundColor: '#c2c2c2' }}
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    outlineColor="#c2c2c2"
+                                                    activeOutlineColor="#000"
+                                                    selectionColor="#000"
+                                                    cursorColor="black"
+                                                    textColor="#000"
+                                                    placeholderTextColor='#6e6e6e'
+                                                    theme={{
+                                                        colors: {
+                                                            onSurfaceVariant: 'black',
+                                                            outline: 'transparent'
+                                                        }
+                                                    }}
                                                     autoComplete='off'
-                                                    left={<TextInput.Icon icon="account" />}
+                                                    left={
+                                                        <TextInput.Icon
+                                                            icon="account"
+                                                            color='#000'
+                                                        />
+                                                    }
                                                 />
                                             )}
                                             name='nome'
@@ -106,12 +146,33 @@ export default function RegisterPage() {
                                                     onChangeText={onChange}
                                                     onBlur={onBlur}
                                                     autoComplete='off'
+                                                    style={{ backgroundColor: '#c2c2c2' }}
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    outlineColor="#c2c2c2"
+                                                    activeOutlineColor="#000"
+                                                    selectionColor="#000"
+                                                    cursorColor="black"
+                                                    textColor="#000"
+                                                    placeholderTextColor='#6e6e6e'
+                                                    theme={{
+                                                        colors: {
+                                                            onSurfaceVariant: 'black',
+                                                            outline: 'transparent'
+                                                        }
+                                                    }}
                                                     secureTextEntry={showPassWd}
-                                                    left={<TextInput.Icon icon="lock" />}
+                                                    left={
+                                                        <TextInput.Icon
+                                                            icon="lock"
+                                                            color='#000'
+                                                        />
+                                                    }
                                                     right={
                                                         <TextInput.Icon
                                                             icon={showPassWd ? 'eye' : 'eye-closed'}
                                                             onPress={() => setShowPasswd(!showPassWd)}
+                                                            color='#000'
                                                         />
                                                     }
                                                 />
@@ -124,13 +185,34 @@ export default function RegisterPage() {
                                             value={confirmPassWdInput}
                                             mode='outlined'
                                             onChangeText={text => setConfirmPassWdInput(text)}
+                                            style={{ backgroundColor: '#c2c2c2' }}
+                                            underlineColor="transparent"
+                                            activeUnderlineColor="transparent"
+                                            outlineColor="#c2c2c2"
+                                            activeOutlineColor="#000"
+                                            selectionColor="#000"
+                                            cursorColor="black"
+                                            textColor="#000"
+                                            placeholderTextColor='#6e6e6e'
+                                            theme={{
+                                                colors: {
+                                                    onSurfaceVariant: 'black',
+                                                    outline: 'transparent'
+                                                }
+                                            }}
                                             autoComplete='off'
                                             secureTextEntry={showPassWd}
-                                            left={<TextInput.Icon icon="lock-check" />}
+                                            left={
+                                                <TextInput.Icon
+                                                    icon="lock-check"
+                                                    color='#000'
+                                                />
+                                            }
                                             right={
                                                 <TextInput.Icon
                                                     icon={showPassWd ? 'eye' : 'eye-closed'}
                                                     onPress={() => setShowPasswd(!showPassWd)}
+                                                    color='#000'
                                                 />
                                             }
                                         />
@@ -144,6 +226,8 @@ export default function RegisterPage() {
                                     <Button
                                         mode="contained"
                                         onPress={handleSubmit(handleRegister)}
+                                        style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }} 
+                                        textColor='#000'
                                     >Cadastrar-se</Button>
                                     <View style={{ height: remUnit(2) }} />
                                     <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/login'}>Logue-se</Link></Text>

@@ -20,9 +20,11 @@ export default function MainPage() {
 							<View style={{ height: remUnit(4) }} />
 
 							<View style={{ width: '75%' }}>
-								<Button mode="contained" onPress={() => router.navigate('/auth/login')}>Login</Button>
+								<Button mode="contained" onPress={() => router.navigate('/auth/login')} style={{ borderRadius: remUnit(.75), backgroundColor: '#e6e6e6ff' }}
+									textColor='#000'>Login</Button>
 								<View style={{ height: remUnit(1) }} />
-								<Button mode="contained" onPress={() => router.navigate('/auth/register')}>Cadastro</Button>
+								<Button mode="contained" onPress={() => router.navigate('/auth/register')} style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+									textColor='#000'>Cadastro</Button>
 							</View>
 						</>
 					} />

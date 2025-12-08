@@ -21,12 +21,12 @@ export default function LoginPage() {
         const result = await AuthService.login({ email, senha });
         console.log(localStorage.getItem('auth_token'), 'autenticado!')
 
-        if(result.status === 201) {
-              setTimeout(() => {
+        if (result.status === 201) {
+            setTimeout(() => {
                 router.navigate('/(tabs)/notes')
             }, 500);
             return;
-        }; 
+        };
         /*setIsLoading(true);
           setIsLoading(false);
   
@@ -70,15 +70,35 @@ export default function LoginPage() {
                                                     mode='outlined'
                                                     onChangeText={onChange}
                                                     onBlur={onBlur}
+                                                    style={{ backgroundColor: '#c2c2c2' }}
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    outlineColor="#c2c2c2"
+                                                    activeOutlineColor="#000"
+                                                    selectionColor="#000"
+                                                    cursorColor="black"
+                                                    textColor="#000"
+                                                    placeholderTextColor='#6e6e6e'
+                                                    theme={{
+                                                        colors: {
+                                                            onSurfaceVariant: 'black',
+                                                            outline: 'transparent'
+                                                        }
+                                                    }}
                                                     autoComplete='off'
-                                                    left={<TextInput.Icon icon="email" />}
+                                                    left={
+                                                        <TextInput.Icon
+                                                            icon="email"
+                                                            color='#000'
+                                                        />
+                                                    }
                                                 />
                                             )}
                                             name='email'
                                         />
 
 
-                                        <View style={{ height: remUnit(1) }} />
+                                        <View style={{ height: remUnit() }} />
 
                                         <Controller
                                             control={control}
@@ -90,13 +110,34 @@ export default function LoginPage() {
                                                     mode='outlined'
                                                     onChangeText={onChange}
                                                     onBlur={onBlur}
+                                                    style={{ backgroundColor: '#c2c2c2' }}
+                                                    underlineColor="transparent"
+                                                    activeUnderlineColor="transparent"
+                                                    outlineColor="#c2c2c2"
+                                                    activeOutlineColor="#000"
+                                                    selectionColor="#000"
+                                                    cursorColor="black"
+                                                    textColor="#000"
+                                                    placeholderTextColor='#6e6e6e'
+                                                    theme={{
+                                                        colors: {
+                                                            onSurfaceVariant: 'black',
+                                                            outline: 'transparent'
+                                                        }
+                                                    }}
                                                     autoComplete='off'
                                                     secureTextEntry={showPassWd}
-                                                    left={<TextInput.Icon icon="lock" />}
+                                                    left={
+                                                        <TextInput.Icon
+                                                            icon="lock"
+                                                            color='#000'
+                                                        />
+                                                    }
                                                     right={
                                                         <TextInput.Icon
                                                             icon={showPassWd ? 'eye' : 'eye-closed'}
                                                             onPress={() => setShowPasswd(!showPassWd)}
+                                                            color='#000'
                                                         />
                                                     }
                                                 />
@@ -104,7 +145,7 @@ export default function LoginPage() {
                                             name='senha'
                                         />
                                     </View>
-                                    <View style={{ height: remUnit(1) }} />
+                                    <View style={{ height: remUnit() }} />
                                     <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 5 }}>
                                         <Checkbox.Item
                                             style={{ padding: 0 }}
@@ -112,7 +153,6 @@ export default function LoginPage() {
                                             label='Lembrar de mim'
                                             labelVariant='bodySmall'
                                             position='leading'
-
                                             labelStyle={{ color: '#797979ff' }}
                                             status={checked ? 'checked' : 'unchecked'}
                                             onPress={() => {
@@ -130,6 +170,8 @@ export default function LoginPage() {
                                         <Button
                                             mode="contained"
                                             onPress={handleSubmit(handleLogin)}
+                                            style={{ borderRadius: remUnit(.75), backgroundColor: '#969696ff' }}
+                                            textColor='#000'
                                         >Login</Button>
                                         <View style={{ height: remUnit(2) }} />
                                         <Text variant="bodySmall" style={{ color: '#797979ff', textAlign: 'center' }}>Já possui uma conta? <Link href={'/auth/register'}>Cadastre-se</Link></Text>

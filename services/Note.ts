@@ -14,12 +14,13 @@ class NoteService {
         }
     }
 
-    async create({ id_categoria, titulo, conteudo }: CreateNoteService) {
+    async create({ id_categoria, titulo, conteudo, resumo_ia }: CreateNoteService) {
         try {
             const res = await axiosInstanceAPI.post('nota', {
                 id_categoria,
                 titulo,
-                conteudo
+                conteudo,
+                resumo_ia
             });
             console.log(res)
             return res;
@@ -46,7 +47,7 @@ class NoteService {
 
     async update({ titulo, conteudo, resumo_ia, noteId }: UpdateNoteService) {
         try {
-             const res = await axiosInstanceAPI.put(`nota/${noteId}`, {
+            const res = await axiosInstanceAPI.put(`nota/${noteId}`, {
                 titulo,
                 conteudo,
                 resumo_ia
