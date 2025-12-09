@@ -1,4 +1,3 @@
-/* import { LoginService, RegisterService } from "../types/type"; */
 import { LoginService, RegisterService } from '@/types/type';
 import Cookies from 'js-cookie';
 import { axiosInstanceAPI } from "../config/axios";

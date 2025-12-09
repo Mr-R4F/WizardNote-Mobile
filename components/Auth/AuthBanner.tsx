@@ -1,6 +1,5 @@
 import remUnit from "@/constants/Units";
-import { JSX } from "react";
-import { View } from "react-native";
+import { View, Image } from "react-native";
 import { Button, Text, TextInput } from 'react-native-paper';
 
 export default function AuthBanner() {
